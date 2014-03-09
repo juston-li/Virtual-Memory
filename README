@@ -1,0 +1,49 @@
+Juston Li
+950998500
+
+Files:
+translate.c
+tlb.c
+pagetable.c
+io.c
+binary.c
+translate.h
+addresses.txt
+BACKING_STORE.bin
+Makefile
+
+Code layout
+translate.c is the Main address translatation function
+it opens/reads Address.txt file, initializes data structures
+Then for each line in address.txt calls functions to convert to binary, 
+lookup tlb, walk page table if tlb miss, then return the memory request
+
+tlb.c handles tlb_lookup and tlb_update. tlb_lookup simply checks if the 
+requests page is in the tlb array returning the corresponding page if it is. 
+return -1 if it is not. tlb_update, updates the tlb given a page and its frame. 
+It will take the first empty slot. If the tlb is full it uses LRU replacement, 
+replacing the entry with the lowest counter. 
+Note on a miss, pagetable.c will call tlb_update after the pagetable walk
+
+pagetable.c on a tlb miss will check if the page requested is valid and in memory. 
+If it is, it will update the TLB with the frame and return. An immediate TLB lookup
+will follow it for a certain TLB hit
+If the page is not in memory, load is called to bring the page to physicalmem_array, then
+the pagetable, TLB are updated.
+
+io.c handles I/O operations access and load. Access just returns the requested memory access
+given the [frame][offset] in physicalmem_array. 
+load opens the BACKING_STORE.bin and fseeks to the requested page. The page is read into the 
+physicalmem_array into entry physicalmem_counter. So physicalmem_array is filled up sequentially,
+by order of the memory requests. 
+
+binary.c handles bin2dec and dec2bin functions.
+
+BACKING_STORE.bin is just repeated lines of "0123456\n" to test correct access requests
+
+Comments
+Pretty fun project and didn't take much time.
+I would actually have preferred an extended project on this than shells. 
+Maybe include larger virtual than physical, mutiple TLB levels comparing different mapping techniques
+
+Grace days: 3
